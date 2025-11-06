@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './App.css'
 import { UsersList } from './components/UsersList'
 import { type User } from './types'
@@ -7,6 +7,11 @@ function App() {
   const [users, setUsers] = useState<User[]>([])
   const [showColors, setShowColors] = useState(false)
   const [sortByCountry, setSortByCountry] = useState(false)
+  const [showReset, setShowReset] = useState(false)
+  const [filterCountry, setFilterCountry] = useState<null | string>(null)
+
+  const originalState = useRef<User[]>([])
+
 
   const toggleColors = () => {
     setShowColors(!showColors)
@@ -15,17 +20,29 @@ function App() {
 
   const toggleSortByCountry = () => { setSortByCountry(!sortByCountry) }
 
-  const sortUsers = sortByCountry ?
-  // [...users].sort((a, b) => {
-  //   return a.location.country.localeCompare(b.location.country)
+  const handleReset = () => {
+    setUsers(originalState.current)
+    setShowReset(false)
+  }
 
-   users.toSorted((a, b) => {
-    return a.location.country.localeCompare(b.location.country)
-  }) : users
+
+  const filteredUsers =  filterCountry !== null && filterCountry.length > 0 
+  ? users.filter((user => {
+    return user.location.country.toLowerCase().includes(filterCountry.toLowerCase())
+  })) : users
+
+  const sortUsers = sortByCountry ?
+    // [...filteredUsers].sort((a, b) => {
+    //   return a.location.country.localeCompare(b.location.country)
+
+    filteredUsers.toSorted((a, b) => {
+      return a.location.country.localeCompare(b.location.country)
+    }) : filteredUsers
 
   const handleDelete = (email: string) => {
     const filterUsers = users.filter((users) => users.email !== email)
     setUsers(filterUsers)
+    setShowReset(true)
   }
 
   useEffect(() => {
@@ -33,6 +50,7 @@ function App() {
       .then(res => res.json())
       .then(res => {
         setUsers(res.results)
+        originalState.current = res.results
       })
       .catch(err => {
         console.error(err);
@@ -49,7 +67,15 @@ function App() {
         </button>
         <button onClick={toggleSortByCountry}>
           {sortByCountry ? 'Show by default' : 'Sort by country'}
-          </button>
+        </button>
+        {
+          showReset &&
+          <button onClick={handleReset}>Initial state</button>
+        }
+        <input 
+        type="text" placeholder='filter by country...'
+        onChange={(e) => { setFilterCountry(e.target.value)}}
+        />
       </header>
       <main>
         {

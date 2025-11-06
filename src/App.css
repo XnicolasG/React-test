@@ -12,4 +12,10 @@ header{
   padding: 2%;
   margin-bottom: 10px;
 }
+input{
+  border-radius: 10px;
+  outline: none;
+  border: 2px whitesmoke solid ;
+  padding-inline: 8px;
+}
 
