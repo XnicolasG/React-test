@@ -4,5 +4,12 @@
   text-align: center;
   width: 100%;
 }
-
+header{
+  display: flex;
+  justify-content: center;
+  gap: 5%;
+  border-bottom: 2px whitesmoke solid;
+  padding: 2%;
+  margin-bottom: 10px;
+}
 
