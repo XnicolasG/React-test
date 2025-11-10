@@ -4,6 +4,8 @@ declare global {
     }
 }
 
+export type SortBy = 'none' | 'name' | 'last' | 'country'
+
 export interface User {
     gender: string;
     name: Name;
