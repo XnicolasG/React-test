@@ -18,4 +18,16 @@ input{
   border: 2px whitesmoke solid ;
   padding-inline: 8px;
 }
-
+tbody { 
+  margin-top: 11px;
+}
+.thead tr{
+  font-size: 1.2rem;
+  color: rgb(180, 180, 178);
+}
+.thead tr th{
+  cursor: pointer;
+}
+.thead tr th:hover{
+  color: rgb(114, 114, 220);
+}

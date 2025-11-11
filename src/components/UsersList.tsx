@@ -1,20 +1,21 @@
-import type { User } from "../types"
-
+import type { SortBy, User } from "../types"
+import '../App.css'
 interface Props {
+    changeSorting: (value: SortBy) => void
     deleteUser: (email: string) => void
     showColors: boolean
     users: User[]
 }
 
-export const UsersList = ({ deleteUser, showColors, users }: Props) => {
+export const UsersList = ({ changeSorting, deleteUser, showColors, users }: Props) => {
     return (
         <table width='100%'>
-            <thead>
+            <thead className="thead">
                 <tr>
                     <th>Image</th>
-                    <th>Name</th>
-                    <th>Last name</th>
-                    <th>Location</th>
+                    <th onClick={() => changeSorting('name') }>Name</th>
+                    <th onClick={() => changeSorting('last') }>Last name</th>
+                    <th onClick={() => changeSorting('country') }>Location</th>
                     <th>Actions</th>
                 </tr>
             </thead>

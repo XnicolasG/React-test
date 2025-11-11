@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 import { UsersList } from './components/UsersList'
-import {  type SortBy, type User } from './types'
+import { type SortBy, type User } from './types'
 
 function App() {
   const [users, setUsers] = useState<User[]>([])
@@ -17,9 +17,9 @@ function App() {
     setShowColors(!showColors)
   }
 
-  const toggleSortByCountry = () => { 
+  const toggleSortByCountry = () => {
     const newSortingValue = sorting === 'none' ? 'country' : 'none'
-    setSorting(newSortingValue) 
+    setSorting(newSortingValue)
   }
 
   const handleReset = () => {
@@ -30,7 +30,7 @@ function App() {
 
   const filteredUsers = useMemo(() => {
     console.log('filter');
-    
+
     return filterCountry !== null && filterCountry.length > 0
       ? users.filter((user => {
         return user.location.country.toLowerCase().includes(filterCountry.toLowerCase())
@@ -39,20 +39,37 @@ function App() {
 
   const sortUsers = useMemo(() => {
     console.log('sort');
-    
-    return sorting ?
-      // [...filteredUsers].sort((a, b) => {
-      //   return a.location.country.localeCompare(b.location.country)
 
-      filteredUsers.toSorted((a, b) => {
-        return a.location.country.localeCompare(b.location.country)
-      }) : filteredUsers
+    if (sorting === 'none') return filteredUsers
+
+    const compareProperties: Record<string, (user: User) => any> = {
+      ['country']: user => user.location.country,
+      ['name']: user => user.name.first,
+      ['last']: user => user.name.last,
+    }
+
+    return filteredUsers.toSorted((a, b) => {
+      const extractProperty = compareProperties[sorting]
+      return extractProperty(a).localeCompare(extractProperty(b))
+    })
+
+    // return sorting === 'country' ?
+    //   // [...filteredUsers].sort((a, b) => {
+    //   //   return a.location.country.localeCompare(b.location.country)
+
+    //   filteredUsers.toSorted((a, b) => {
+    //     return a.location.country.localeCompare(b.location.country)
+    //   }) : filteredUsers
   }, [filteredUsers, sorting])
 
   const handleDelete = (email: string) => {
     const filterUsers = users.filter((users) => users.email !== email)
     setUsers(filterUsers)
     setShowReset(true)
+  }
+
+  const changeSorting = (value:SortBy) => {
+    setSorting(value)
   }
 
   useEffect(() => {
@@ -76,7 +93,7 @@ function App() {
           Color rows
         </button>
         <button onClick={toggleSortByCountry}>
-          {sorting === 'none' ? 'Show by default' : 'Sort by country'}
+          {sorting === 'none' ? 'Sort by country' : 'Show by default'}
         </button>
         {
           showReset &&
@@ -89,7 +106,7 @@ function App() {
       </header>
       <main>
         {
-          <UsersList deleteUser={handleDelete} showColors={showColors} users={sortUsers} />
+          <UsersList changeSorting={changeSorting} deleteUser={handleDelete} showColors={showColors} users={sortUsers} />
         }
       </main>
     </div>
