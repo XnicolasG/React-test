@@ -42,7 +42,7 @@ function App() {
 
     if (sorting === 'none') return filteredUsers
 
-    const compareProperties: Record<string, (user: User) => any> = {
+    const compareProperties: Record<string, (user: User) => string> = {
       ['country']: user => user.location.country,
       ['name']: user => user.name.first,
       ['last']: user => user.name.last,
