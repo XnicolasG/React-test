@@ -9,6 +9,8 @@ function App() {
   const [sorting, setSorting] = useState<SortBy>('none')
   const [showReset, setShowReset] = useState(false)
   const [filterCountry, setFilterCountry] = useState<null | string>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(false)
 
   const originalState = useRef<User[]>([])
 
@@ -73,7 +75,8 @@ function App() {
   }
 
   useEffect(() => {
-    fetch('https://randomuser.me/api?results=100')
+    setLoading(true)
+    fetch('https://randomuser.me/api?results=10')
       .then(res => res.json())
       .then(res => {
         setUsers(res.results)
@@ -81,7 +84,10 @@ function App() {
       })
       .catch(err => {
         console.error(err);
-
+        setError(true)
+      })
+      .finally(() => {
+        setLoading(false)
       })
   }, [])
 
@@ -106,6 +112,13 @@ function App() {
       </header>
       <main>
         {
+          loading ? <p>Loading...</p>
+          :
+          !loading && error ? <p>Something went wrong !!</p>
+          :
+          !loading && !error && users.length === 0 ?
+          <p>No users detected</p>
+          :
           <UsersList changeSorting={changeSorting} deleteUser={handleDelete} showColors={showColors} users={sortUsers} />
         }
       </main>

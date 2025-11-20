@@ -27,7 +27,7 @@ export const UsersList = ({ changeSorting, deleteUser, showColors, users }: Prop
                         return (
 
                             <tr key={user.email} style={{ backgroundColor: color }}>
-                                <td>
+                                <td className="contImg">
                                     <img src={user.picture.thumbnail} alt={user.name.title} />
                                 </td>
                                 <td>{user.name.first}</td>
