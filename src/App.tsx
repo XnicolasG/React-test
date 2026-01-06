@@ -11,6 +11,7 @@ function App() {
   const [filterCountry, setFilterCountry] = useState<null | string>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
 
   const originalState = useRef<User[]>([])
 
@@ -77,7 +78,10 @@ function App() {
   useEffect(() => {
     setLoading(true)
     fetch('https://randomuser.me/api?results=10')
-      .then(res => res.json())
+      .then(res =>{
+        if (!res.ok) throw new Error('Error at the request')
+       return res.json()
+      } )
       .then(res => {
         setUsers(res.results)
         originalState.current = res.results
