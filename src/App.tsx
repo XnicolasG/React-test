@@ -71,19 +71,19 @@ function App() {
     setShowReset(true)
   }
 
-  const changeSorting = (value:SortBy) => {
+  const changeSorting = (value: SortBy) => {
     setSorting(value)
   }
 
   useEffect(() => {
     setLoading(true)
-    fetch('https://randomuser.me/api?results=10')
-      .then(res =>{
-        if (!res.ok) throw new Error('Error at the request')
-       return res.json()
-      } )
+    fetch(`https://randomuser.me/api?results=10&seed=srpizza&page=${currentPage}`) 
       .then(res => {
-        setUsers(res.results)
+        if (!res.ok) throw new Error('Error at the request')
+        return res.json()
+      })
+      .then(res => {
+        setUsers(prevState => prevState.concat(res.results))
         originalState.current = res.results
       })
       .catch(err => {
@@ -93,7 +93,7 @@ function App() {
       .finally(() => {
         setLoading(false)
       })
-  }, [])
+  }, [currentPage])
 
   return (
     <div>
@@ -116,14 +116,23 @@ function App() {
       </header>
       <main>
         {
+              !loading && !error && users.length === 0 ?
+                <p>No users detected</p>
+                :
+                <UsersList changeSorting={changeSorting} deleteUser={handleDelete} showColors={showColors} users={sortUsers} />
+        }
+        {
           loading ? <p>Loading...</p>
-          :
-          !loading && error ? <p>Something went wrong !!</p>
-          :
-          !loading && !error && users.length === 0 ?
-          <p>No users detected</p>
-          :
-          <UsersList changeSorting={changeSorting} deleteUser={handleDelete} showColors={showColors} users={sortUsers} />
+            :
+            !loading && error && <p>Something went wrong !!</p>
+        }
+        {
+          !loading && !error &&
+          <button
+            onClick={() => setCurrentPage(currentPage + 1)}
+          >
+            Show more data
+          </button>
         }
       </main>
     </div>
