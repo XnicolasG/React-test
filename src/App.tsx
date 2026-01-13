@@ -3,6 +3,15 @@ import './App.css'
 import { UsersList } from './components/UsersList'
 import { type SortBy, type User } from './types'
 
+const fetchUsers = (page: number) => {
+  return  fetch(`https://randomuser.me/api?results=10&seed=srpizza&page=${page}`)
+      .then(res => {
+        if (!res.ok) throw new Error('Error at the request')
+        return res.json()
+      })
+      .then(res => res.results)
+}
+
 function App() {
   const [users, setUsers] = useState<User[]>([])
   const [showColors, setShowColors] = useState(false)
@@ -77,14 +86,13 @@ function App() {
 
   useEffect(() => {
     setLoading(true)
-    fetch(`https://randomuser.me/api?results=10&seed=srpizza&page=${currentPage}`) 
+    fetchUsers(currentPage)
       .then(res => {
-        if (!res.ok) throw new Error('Error at the request')
-        return res.json()
-      })
-      .then(res => {
-        setUsers(prevState => prevState.concat(res.results))
-        originalState.current = res.results
+        setUsers(prevState => {
+          const newUsers = prevState.concat(res.results)
+          originalState.current = res.results
+          return newUsers
+        })
       })
       .catch(err => {
         console.error(err);
@@ -116,15 +124,15 @@ function App() {
       </header>
       <main>
         {
-              !loading && !error && users.length === 0 ?
-                <p>No users detected</p>
-                :
-                <UsersList changeSorting={changeSorting} deleteUser={handleDelete} showColors={showColors} users={sortUsers} />
+          !loading && !error && users.length === 0 ?
+            <p>No users detected</p>
+            :
+            <UsersList changeSorting={changeSorting} deleteUser={handleDelete} showColors={showColors} users={sortUsers} />
         }
         {
           loading ? <p>Loading...</p>
             :
-            !loading && error && <p>Something went wrong !!</p>
+            error && <p>Something went wrong !!</p>
         }
         {
           !loading && !error &&
