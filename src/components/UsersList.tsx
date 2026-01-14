@@ -8,6 +8,8 @@ interface Props {
 }
 
 export const UsersList = ({ changeSorting, deleteUser, showColors, users }: Props) => {
+    console.log(users);
+    
     return (
         <table width='100%'>
             <thead className="thead">
@@ -26,9 +28,9 @@ export const UsersList = ({ changeSorting, deleteUser, showColors, users }: Prop
                         const color = showColors ? backgroundColor : 'transparent'
                         return (
 
-                            <tr key={user.email} style={{ backgroundColor: color }}>
+                            <tr key={user?.email} style={{ backgroundColor: color }}>
                                 <td className="contImg">
-                                    <img src={user.picture.thumbnail} alt={user.name.title} />
+                                    <img src={user?.picture?.thumbnail} alt={user.name.title} />
                                 </td>
                                 <td>{user.name.first}</td>
                                 <td>{user.name.last}</td>

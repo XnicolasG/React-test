@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 import { UsersList } from './components/UsersList'
 import { type SortBy, type User } from './types'
+import { useQuery } from '@tanstack/react-query'
 
 const fetchUsers = (page: number) => {
   return  fetch(`https://randomuser.me/api?results=10&seed=srpizza&page=${page}`)
@@ -13,13 +14,15 @@ const fetchUsers = (page: number) => {
 }
 
 function App() {
-  const [users, setUsers] = useState<User[]>([])
+  const {isLoading: loading, isError: error, data: users =[]} = useQuery<User[]>({
+    queryKey: ['users'], // <-- key de la info
+    queryFn: () => fetchUsers(1) //<-- como trae la info
+
+  })
   const [showColors, setShowColors] = useState(false)
   const [sorting, setSorting] = useState<SortBy>('none')
   const [showReset, setShowReset] = useState(false)
   const [filterCountry, setFilterCountry] = useState<null | string>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
 
   const originalState = useRef<User[]>([])
@@ -35,7 +38,7 @@ function App() {
   }
 
   const handleReset = () => {
-    setUsers(originalState.current)
+    // setUsers(originalState.current)
     setShowReset(false)
   }
 
@@ -44,9 +47,9 @@ function App() {
     console.log('filter');
 
     return filterCountry !== null && filterCountry.length > 0
-      ? users.filter((user => {
+      ? users.filter(user => {
         return user.location.country.toLowerCase().includes(filterCountry.toLowerCase())
-      })) : users
+      }) : users
   }, [users, filterCountry])
 
   const sortUsers = useMemo(() => {
@@ -84,24 +87,25 @@ function App() {
     setSorting(value)
   }
 
-  useEffect(() => {
-    setLoading(true)
-    fetchUsers(currentPage)
-      .then(res => {
-        setUsers(prevState => {
-          const newUsers = prevState.concat(res.results)
-          originalState.current = res.results
-          return newUsers
-        })
-      })
-      .catch(err => {
-        console.error(err);
-        setError(true)
-      })
-      .finally(() => {
-        setLoading(false)
-      })
-  }, [currentPage])
+  // useEffect(() => {
+  //   setLoading(true)
+
+  //   fetchUsers(currentPage)
+  //     .then(users => {
+  //       setUsers(prevState => {
+  //         const newUsers = prevState.concat(users)
+  //         originalState.current = newUsers
+  //         return newUsers
+  //       })
+  //     })
+  //     .catch(err => {
+  //       console.error(err);
+  //       setError(true)
+  //     })
+  //     .finally(() => {
+  //       setLoading(false)
+  //     })
+  // }, [currentPage])
 
   return (
     <div>
