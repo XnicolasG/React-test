@@ -1,24 +1,39 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import './App.css'
 import { UsersList } from './components/UsersList'
 import { type SortBy, type User } from './types'
-import { useQuery } from '@tanstack/react-query'
+import { useInfiniteQuery } from '@tanstack/react-query'
 
-const fetchUsers = (page: number) => {
-  return  fetch(`https://randomuser.me/api?results=10&seed=srpizza&page=${page}`)
-      .then(res => {
-        if (!res.ok) throw new Error('Error at the request')
-        return res.json()
-      })
-      .then(res => res.results)
+const fetchUsers = async (page: number) => {
+  const response = await fetch(`https://randomuser.me/api?results=10&seed=srpizza&page=${page}`)
+
+  if (!response.ok) throw new Error('Error at the request')
+
+  const data = await response.json()
+  return {
+    users: data.results,
+    nextCursor: data.info.page + 1
+  }
 }
 
 function App() {
-  const {isLoading: loading, isError: error, data: users =[]} = useQuery<User[]>({
+  const { isLoading: loading,
+    isError: error,
+    data,
+    refetch,
+    fetchNextPage,
+    hasNextPage
+  } = useInfiniteQuery<{ nextCursor: number, users: User[] }>({
     queryKey: ['users'], // <-- key de la info
-    queryFn: () => fetchUsers(1) //<-- como trae la info
-
+    queryFn: ({ pageParam }) => fetchUsers(pageParam), //<-- como trae la info
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => lastPage.nextCursor
   })
+  const allUsers = data?.pages.flatMap(page => page.users) ?? []
+
+  console.log(allUsers);
+
+
   const [showColors, setShowColors] = useState(false)
   const [sorting, setSorting] = useState<SortBy>('none')
   const [showReset, setShowReset] = useState(false)
@@ -37,20 +52,19 @@ function App() {
     setSorting(newSortingValue)
   }
 
-  const handleReset = () => {
-    // setUsers(originalState.current)
-    setShowReset(false)
+  const handleReset = async () => {
+    await refetch()
+    // setShowReset(false)
   }
 
 
   const filteredUsers = useMemo(() => {
-    console.log('filter');
+  if (!filterCountry || filterCountry.length === 0) return allUsers
 
-    return filterCountry !== null && filterCountry.length > 0
-      ? users.filter(user => {
-        return user.location.country.toLowerCase().includes(filterCountry.toLowerCase())
-      }) : users
-  }, [users, filterCountry])
+  return allUsers.filter(user =>
+    user.location.country.toLowerCase().includes(filterCountry.toLowerCase())
+  )
+}, [allUsers, filterCountry])
 
   const sortUsers = useMemo(() => {
     console.log('sort');
@@ -67,45 +81,17 @@ function App() {
       const extractProperty = compareProperties[sorting]
       return extractProperty(a).localeCompare(extractProperty(b))
     })
-
-    // return sorting === 'country' ?
-    //   // [...filteredUsers].sort((a, b) => {
-    //   //   return a.location.country.localeCompare(b.location.country)
-
-    //   filteredUsers.toSorted((a, b) => {
-    //     return a.location.country.localeCompare(b.location.country)
-    //   }) : filteredUsers
   }, [filteredUsers, sorting])
 
   const handleDelete = (email: string) => {
-    const filterUsers = users.filter((users) => users.email !== email)
-    setUsers(filterUsers)
+    //const filterUsers = users.filter((users) => users.email !== email)
+    //setUsers(filterUsers)
     setShowReset(true)
   }
 
   const changeSorting = (value: SortBy) => {
     setSorting(value)
   }
-
-  // useEffect(() => {
-  //   setLoading(true)
-
-  //   fetchUsers(currentPage)
-  //     .then(users => {
-  //       setUsers(prevState => {
-  //         const newUsers = prevState.concat(users)
-  //         originalState.current = newUsers
-  //         return newUsers
-  //       })
-  //     })
-  //     .catch(err => {
-  //       console.error(err);
-  //       setError(true)
-  //     })
-  //     .finally(() => {
-  //       setLoading(false)
-  //     })
-  // }, [currentPage])
 
   return (
     <div>
@@ -128,7 +114,7 @@ function App() {
       </header>
       <main>
         {
-          !loading && !error && users.length === 0 ?
+          !loading && !error && allUsers.length === 0 ?
             <p>No users detected</p>
             :
             <UsersList changeSorting={changeSorting} deleteUser={handleDelete} showColors={showColors} users={sortUsers} />

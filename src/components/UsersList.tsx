@@ -23,7 +23,7 @@ export const UsersList = ({ changeSorting, deleteUser, showColors, users }: Prop
             </thead>
             <tbody>
                 {
-                    users.map((user, index) => {
+                    users?.map((user, index) => {
                         const backgroundColor = index % 2 === 0 ? '#333' : '#555'
                         const color = showColors ? backgroundColor : 'transparent'
                         return (
