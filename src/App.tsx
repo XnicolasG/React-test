@@ -1,46 +1,27 @@
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import './App.css'
 import { UsersList } from './components/UsersList'
 import { type SortBy, type User } from './types'
-import { useInfiniteQuery } from '@tanstack/react-query'
+import { useUsers } from './hooks/useUsers'
 
-const fetchUsers = async (page: number) => {
-  const response = await fetch(`https://randomuser.me/api?results=10&seed=srpizza&page=${page}`)
-
-  if (!response.ok) throw new Error('Error at the request')
-
-  const data = await response.json()
-  return {
-    users: data.results,
-    nextCursor: data.info.page + 1
-  }
-}
 
 function App() {
-  const { isLoading: loading,
-    isError: error,
-    data,
+  const {
+    loading, 
+    error, 
+    allUsers,
     refetch,
     fetchNextPage,
     hasNextPage
-  } = useInfiniteQuery<{ nextCursor: number, users: User[] }>({
-    queryKey: ['users'], // <-- key de la info
-    queryFn: ({ pageParam }) => fetchUsers(pageParam), //<-- como trae la info
-    initialPageParam: 1,
-    getNextPageParam: (lastPage) => lastPage.nextCursor
-  })
-  const allUsers = data?.pages.flatMap(page => page.users) ?? []
-
-  console.log(data?.pages, allUsers);
-
+  } = useUsers()
 
   const [showColors, setShowColors] = useState(false)
   const [sorting, setSorting] = useState<SortBy>('none')
   const [showReset, setShowReset] = useState(false)
   const [filterCountry, setFilterCountry] = useState<null | string>(null)
-  const [currentPage, setCurrentPage] = useState(1)
+  // const [currentPage, setCurrentPage] = useState(1)
 
-  const originalState = useRef<User[]>([])
+  // const originalState = useRef<User[]>([])
 
 
   const toggleColors = () => {
