@@ -31,7 +31,7 @@ function App() {
   })
   const allUsers = data?.pages.flatMap(page => page.users) ?? []
 
-  console.log(allUsers);
+  console.log(data?.pages, allUsers);
 
 
   const [showColors, setShowColors] = useState(false)
@@ -125,9 +125,9 @@ function App() {
             error && <p>Something went wrong !!</p>
         }
         {
-          !loading && !error &&
+          !loading && !error && hasNextPage &&
           <button
-            onClick={() => setCurrentPage(currentPage + 1)}
+            onClick={() => fetchNextPage()}
           >
             Show more data
           </button>
